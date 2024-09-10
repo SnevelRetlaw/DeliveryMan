@@ -21,7 +21,8 @@ walterDM=function(roads, car, packages) {
 #' @param packages See help documentation for the runDeliveryMan function
 #' @return A list of transitions that illustrates the route to the 'cheapest' package. A transition is described by 2,4,5,6,8 to indicate the direction
 findCheapestPackage=function(roads, car, packages){
-  return list(5,5,5,5,5)
+  ret = list(5,5,5,5)
+  return(ret)
 }
 
 # This function runs through all possible routes and returns the cheapest.
@@ -64,10 +65,16 @@ runAstar=function(roads, start, goal){
       #' TODO: find out how to return the correct path -> start from the goal node
       #' and find the adjacent node with the lowest cost and add that to the list.
       #' from this node, find the 'cheapest' neigbour again until you are back at the start.
-      return list(5,5,5,5,5,5,5)
+      return (list(5,5,5,5,5,5,5))
     }
   }
-  return list(5,5,5,5,5)
+  return (list(5,5,5,5,5))
+}
+
+
+manhattanDistance=function(start, goal){
+  #return(abs(start$x - goal$x) + abs(start$y - goal$y))
+  return(abs(start[[1]] - goal[[1]]) + abs(start[[2]] - goal[[2]]))
 }
 
 #################################################################################################################
