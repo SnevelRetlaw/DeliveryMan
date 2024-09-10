@@ -15,14 +15,35 @@ walterDM=function(roads, car, packages) {
   car$nextMove = nextMove
   return (car)
 }
-
+#' This function loops through all packages that have not been delivered and runs A* on them
+#' It returns the path to the cheapest package
 #' @param roads See help documentation for the runDeliveryMan function
 #' @param car See help documentation for the runDeliveryMan function
 #' @param packages See help documentation for the runDeliveryMan function
 #' @return A list of transitions that illustrates the route to the 'cheapest' package. A transition is described by 2,4,5,6,8 to indicate the direction
 findCheapestPackage=function(roads, car, packages){
-  ret = list(5,5,5,5)
-  return(ret)
+  # initialise
+    # cheapestPackage is the number of the package that is the shortest
+  cheapestPackage = -1
+    # shortestPath represents the path to the cheapestPackage
+  #' TODO: find a proper way to represent paths
+  shortestPath = Inf
+  # loop trough all packages
+  for(package in seq_along(packages)){
+    # if package is delivered, skip
+    if(package[[5]] == 2) next
+    
+    # run A* with the current package as the goal and the current location of the car as the start
+    newPath = runAstar(roads, list(car$x, car$y), list(package[[1]], package[[2]]))
+    # compare this distance/path with the current shortest path
+    #' TODO: find way to represent and compare paths
+    if(newPath < shortestPath){
+      # If shorter, update shortest path and package.
+      shortestPath = newPath
+      cheapestPackage = package
+    }
+  }
+  return(shortestPath)
 }
 
 # This function runs through all possible routes and returns the cheapest.
@@ -71,9 +92,10 @@ runAstar=function(roads, start, goal){
   return (list(5,5,5,5,5))
 }
 
-
+#' function to retrieve the manhattan distance between two points
+#' @param start A list of 2 elements, the first is the x coordinate, the second is the y coordinate
+#' @param goal A list of 2 elements, the first is the x coordinate, the second is the y coordinate
 manhattanDistance=function(start, goal){
-  #return(abs(start$x - goal$x) + abs(start$y - goal$y))
   return(abs(start[[1]] - goal[[1]]) + abs(start[[2]] - goal[[2]]))
 }
 
