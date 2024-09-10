@@ -32,6 +32,10 @@ findCheapestPackage=function(roads, car, packages){
   for(package in seq_along(packages)){
     # if package is delivered, skip
     if(package[[5]] == 2) next
+    # if the car is holding a package, throw error (but should not happen)
+    if(package[[5]] == 1){
+      stop("Car is holding a package, but it is looking for the closest package. 'findCheapestPackage' is called while it should not have been called")
+    }
     
     # run A* with the current package as the goal and the current location of the car as the start
     newPath = runAstar(roads, list(car$x, car$y), list(package[[1]], package[[2]]))
