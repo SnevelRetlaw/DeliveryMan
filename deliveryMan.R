@@ -208,6 +208,22 @@ index_to_coords = function(index, ncol_grid, nrow_grid) {
 manhattanDistance=function(start, goal){
   return(abs(start[[1]] - goal[[1]]) + abs(start[[2]] - goal[[2]]))
 }
+
+pathToNextMove=function(path){
+  # path[1] - path[3] -> x coordinates 
+  # path[2] - path[4] -> y coordinates
+  changeX = path[1] - path[3]
+  changeY = path[2] - path[4]
+  switch (c(changeX,changeY),
+    c(0,0) = return (5),
+    c(-1, 0) = return(6),
+    c(1, 0) = return(4),
+    c(0,-1) = return(8),
+    c(0,1) = return(2)
+  )
+  stop("invalid transition. changeX: " ++ changeX ++ ", ChangeY: " ++ changeY)
+}
+
 ######################################
 
 
