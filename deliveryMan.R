@@ -3,14 +3,15 @@
 
 walterDM=function(roads, car, packages) {
   nextMove=0
-  closest
   if (car$load==0) {
     # gets the first transition of the route to the 'cheapest' package
     nextMove = pathToNextMove(findCheapestPackage(roads, car, packages)$path)
   }
   else {
     # gets the first transition of the cheapest rout
-    nextMove = pathToNextMove(a_star(roads, list(car$x, car$y), list(car$load[3], car$load[4]))$path)
+    packageDestination = c(car$load[3], car$load[4])
+    print(packageDestination)
+    nextMove = pathToNextMove(a_star(roads, list(car$x, car$y), packageDestination)$path)
   }
   cat(nextMove)
   car$nextMove = nextMove
@@ -32,14 +33,14 @@ findCheapestPackage=function(roads, car, packages){
   # loop trough all packages
   for(package in seq_along(packages)){
     # if package is delivered, skip
-    if(package[[5]] == 2) next
+    if(packages[package, 5] == 2) next
     # if the car is holding a package, throw error (but should not happen)
-    if(package[[5]] == 1){
+    if(packages[package, 5] == 1){
       stop("Car is holding a package, but it is looking for the closest package. 'findCheapestPackage' is called while it should not have been called")
     }
     
     # run A* with the current package as the goal and the current location of the car as the start
-    newPath = runAstar(roads, list(car$x, car$y), list(package[[1]], package[[2]]))
+    newPath = a_star(roads, list(car$x, car$y), list(packages[package,1], packages[package,2]))
     # compare this distance/path with the current shortest path
     #' TODO: find way to represent and compare paths
     if(newPath$distance < shortestPath$distance){
@@ -61,7 +62,7 @@ a_star = function(roads, start, goal) {
   ncol_grid= ncol(roads$hroads) 
   
   # Convert the start and goal coordinates to node indices
-  start_index = node_index(start[1], start[2], ncol_grid)
+  start_index = node_index(start[[1]], start[[2]], ncol_grid)
   goal_index = node_index(goal[1], goal[2], ncol_grid)
   
   # This contains the distances from the start node to all other nodes, initialized with a distance of "Infinity"
@@ -102,7 +103,9 @@ a_star = function(roads, start, goal) {
     
     # Get the coordinates of the current node
     current_coords = index_to_coords(inspected_node_index, ncol_grid, nrow_grid)
+    print("Current_coords: " ++ current_coords)
     current_row = current_coords[1]
+    print("current_row" ++ current_row)
     current_col = current_coords[2]
     
     if (inspected_node_index == goal_index) {
@@ -193,6 +196,8 @@ a_star = function(roads, start, goal) {
 ####### Helper Astar functions #######
 # Convert coordinates to indices in a 1D representation of the grid
 node_index = function(row, col, ncol_grid) {
+  cat("Row", row)
+  #throws error.
   return((row - 1) * ncol_grid + col)
 }
 
@@ -215,14 +220,20 @@ pathToNextMove=function(path){
   # path[2] - path[4] -> y coordinates
   changeX = path[1] - path[3]
   changeY = path[2] - path[4]
-  switch (c(changeX,changeY),
-    c(0,0) = return (5),
-    c(-1, 0) = return(6),
-    c(1, 0) = return(4),
-    c(0,-1) = return(8),
-    c(0,1) = return(2)
-  )
-  stop("invalid transition. changeX: " ++ changeX ++ ", ChangeY: " ++ changeY)
+  
+  if (changeX == 0 && changeY == 0) {
+    return(5)
+  } else if (changeX == -1 && changeY == 0) {
+    return(6)
+  } else if (changeX == 1 && changeY == 0) {
+    return(4)
+  } else if (changeX == 0 && changeY == -1) {
+    return(8)
+  } else if (changeX == 0 && changeY == 1) {
+    return(2)
+  } else {
+    stop("invalid transition. changeX: " ++ changeX ++ ", ChangeY: " ++ changeY)
+  }
 }
 
 ######################################
