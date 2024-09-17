@@ -109,10 +109,11 @@ a_star = function(roads, start, goal) {
       cat("Goal node found!\n")
       
       # Reconstruct the path by backtracking from the goal node to the start node
-      path = c(goal_index)
+      path = c(goal)
       while (!is.na(parent[inspected_node_index])) {
         inspected_node_index = parent[inspected_node_index]
-        path = append(inspected_node_index, path)
+        node_coords = index_to_coords(inspected_node_index, ncol_grid, nrow_grid)
+        path = append(node_coords, path)
       }
       
       return(list(distance = distances[goal_index], path = path))
