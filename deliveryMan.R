@@ -6,12 +6,13 @@ walterDM=function(roads, car, packages) {
   closest
   if (car$load==0) {
     # gets the first transition of the route to the 'cheapest' package
-    nextMove = findCheapestPackage(roads, car, packages)[1]
+    nextMove = pathToNextMove(findCheapestPackage(roads, car, packages)$path)
   }
   else {
     # gets the first transition of the cheapest rout
-    nextMove = runAstar(roads, list(car$x, car$y), list(car$load[3], car$load[4]))[1]
+    nextMove = pathToNextMove(a_star(roads, list(car$x, car$y), list(car$load[3], car$load[4]))$path)
   }
+  cat(nextMove)
   car$nextMove = nextMove
   return (car)
 }
@@ -27,7 +28,7 @@ findCheapestPackage=function(roads, car, packages){
   cheapestPackage = -1
     # shortestPath represents the path to the cheapestPackage
   #' TODO: find a proper way to represent paths
-  shortestPath = Inf
+  shortestPath = c(distance = Inf, c())
   # loop trough all packages
   for(package in seq_along(packages)){
     # if package is delivered, skip
@@ -41,7 +42,7 @@ findCheapestPackage=function(roads, car, packages){
     newPath = runAstar(roads, list(car$x, car$y), list(package[[1]], package[[2]]))
     # compare this distance/path with the current shortest path
     #' TODO: find way to represent and compare paths
-    if(newPath < shortestPath){
+    if(newPath$distance < shortestPath$distance){
       # If shorter, update shortest path and package.
       shortestPath = newPath
       cheapestPackage = package
