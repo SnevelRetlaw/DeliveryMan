@@ -62,7 +62,7 @@ a_star = function(roads, start, goal) {
   ncol_grid= ncol(roads$hroads) 
   
   # Convert the start and goal coordinates to node indices
-  start_index = node_index(start[[1]], start[[2]], ncol_grid)
+  start_index = node_index(start[1], start[2], ncol_grid)
   goal_index = node_index(goal[1], goal[2], ncol_grid)
   
   # This contains the distances from the start node to all other nodes, initialized with a distance of "Infinity"
