@@ -5,7 +5,8 @@ walterDM=function(roads, car, packages) {
   nextMove=0
   if (car$load==0) {
     # gets the first transition of the route to the 'cheapest' package
-    nextMove = pathToNextMove(findCheapestPackage(roads, car, packages)$path)
+    cheapestPackage = findPathToCheapestPackage(roads, car, packages)
+    nextMove = pathToNextMove(cheapestPackage$path)
   }
   else {
     # gets the first transition of the cheapest rout
@@ -13,7 +14,7 @@ walterDM=function(roads, car, packages) {
     print(packageDestination)
     nextMove = pathToNextMove(a_star(roads, list(car$x, car$y), packageDestination)$path)
   }
-  cat(nextMove)
+  cat(nextMove, "\n")
   car$nextMove = nextMove
   return (car)
 }
@@ -23,32 +24,36 @@ walterDM=function(roads, car, packages) {
 #' @param car See help documentation for the runDeliveryMan function
 #' @param packages See help documentation for the runDeliveryMan function
 #' @return A list of transitions that illustrates the route to the 'cheapest' package. A transition is described by 2,4,5,6,8 to indicate the direction
-findCheapestPackage=function(roads, car, packages){
+findPathToCheapestPackage=function(roads, car, packages){
   # initialise
-    # cheapestPackage is the number of the package that is the shortest
-  cheapestPackage = -1
-    # shortestPath represents the path to the cheapestPackage
-  #' TODO: find a proper way to represent paths
-  shortestPath = c(distance = Inf, c())
+    # shortestPath represents the distance+path to the cheapestPackage
+  shortestPath = list(distance = Inf, path = c())
   # loop trough all packages
-  for(package in seq_along(packages)){
+  for(package in seq_len(nrow(packages))){
+    cat("Calculating path of next package\n\n")
     # if package is delivered, skip
-    if(packages[package, 5] == 2) next
+    if(packages[package, 5] == 2){
+      cat("Package ", package, " already delivered\n")
+    }
     # if the car is holding a package, throw error (but should not happen)
     if(packages[package, 5] == 1){
       stop("Car is holding a package, but it is looking for the closest package. 'findCheapestPackage' is called while it should not have been called")
     }
     
     # run A* with the current package as the goal and the current location of the car as the start
-    newPath = a_star(roads, list(car$x, car$y), list(packages[package,1], packages[package,2]))
+    newPath = a_star(roads, c(car$x, car$y), c(packages[package,1], packages[package,2]))
     # compare this distance/path with the current shortest path
-    #' TODO: find way to represent and compare paths
     if(newPath$distance < shortestPath$distance){
       # If shorter, update shortest path and package.
+      cat("New shortest path: ")
+      cat(newPath$path)
+      cat("\n\n")
       shortestPath = newPath
-      cheapestPackage = package
     }
   }
+  cat("shortest path: ")
+  print(shortestPath$path)
+  cat("\n")
   return(shortestPath)
 }
 
@@ -103,9 +108,7 @@ a_star = function(roads, start, goal) {
     
     # Get the coordinates of the current node
     current_coords = index_to_coords(inspected_node_index, ncol_grid, nrow_grid)
-    print("Current_coords: " ++ current_coords)
     current_row = current_coords[1]
-    print("current_row" ++ current_row)
     current_col = current_coords[2]
     
     if (inspected_node_index == goal_index) {
@@ -196,7 +199,6 @@ a_star = function(roads, start, goal) {
 ####### Helper Astar functions #######
 # Convert coordinates to indices in a 1D representation of the grid
 node_index = function(row, col, ncol_grid) {
-  cat("Row", row)
   #throws error.
   return((row - 1) * ncol_grid + col)
 }
@@ -216,8 +218,11 @@ manhattanDistance=function(start, goal){
 }
 
 pathToNextMove=function(path){
-  # path[1] - path[3] -> x coordinates 
-  # path[2] - path[4] -> y coordinates
+  # hotfix to make sure our program handles if a package is on the same tile as the car.
+  if(length(path) <= 2){
+    return(5)
+  }
+  
   changeX = path[1] - path[3]
   changeY = path[2] - path[4]
   
