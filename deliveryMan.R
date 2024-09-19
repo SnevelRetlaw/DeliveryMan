@@ -9,12 +9,12 @@ walterDM=function(roads, car, packages) {
     nextMove = pathToNextMove(cheapestPackage$path)
   }
   else {
-    # gets the first transition of the cheapest rout
-    packageDestination = c(car$load[3], car$load[4])
+    # gets the first transition of the cheapest route
+    packageDestination = c(packages[car$load, 3],packages[car$load, 4])
     print(packageDestination)
     nextMove = pathToNextMove(a_star(roads, c(car$x, car$y), packageDestination)$path)
   }
-  cat(nextMove, "\n")
+  cat("Next move: ", nextMove, "\n")
   car$nextMove = nextMove
   return (car)
 }
@@ -34,6 +34,7 @@ findPathToCheapestPackage=function(roads, car, packages){
     # if package is delivered, skip
     if(packages[package, 5] == 2){
       cat("Package ", package, " already delivered\n")
+      next
     }
     # if the car is holding a package, throw error (but should not happen)
     if(packages[package, 5] == 1){
@@ -127,13 +128,13 @@ a_star = function(roads, start, goal) {
     }
     
     # Visit the node with the lowest priority
-    cat(
-      "Visiting node",
-      inspected_node_index,
-      "with currently lowest priority of",
-      inspected_node_priority,
-      "\n"
-    )
+    #cat(
+    #  "Visiting node",
+    #  inspected_node_index,
+    #  "with currently lowest priority of",
+    #  inspected_node_priority,
+    #  "\n"
+    #)
     #(3,1)-h(1,3)-(3,2)-h(2,3)-(3,3)
     #  |            |            |
     #v(1,2)        v(2,2)       v(3,2)
@@ -191,8 +192,8 @@ a_star = function(roads, start, goal) {
     
     # Mark the current node as visited after checking all its neighbors
     visited_nodes[inspected_node_index] = TRUE
-    cat("Visited nodes:", visited_nodes, "\n")
-    cat("Currently lowest distances:", distances, "\n")
+    #cat("Visited nodes:", visited_nodes, "\n")
+    #cat("Currently lowest distances:", distances, "\n")
   }
 }
 
