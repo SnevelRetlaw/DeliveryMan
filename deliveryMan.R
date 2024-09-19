@@ -11,10 +11,10 @@ walterDM=function(roads, car, packages) {
   else {
     # gets the first transition of the cheapest route
     packageDestination = c(packages[car$load, 3],packages[car$load, 4])
-    print(packageDestination)
+    #print(packageDestination)
     nextMove = pathToNextMove(a_star(roads, c(car$x, car$y), packageDestination)$path)
   }
-  cat("Next move: ", nextMove, "\n")
+  #cat("Next move: ", nextMove, "\n")
   car$nextMove = nextMove
   return (car)
 }
@@ -30,10 +30,10 @@ findPathToCheapestPackage=function(roads, car, packages){
   shortestPath = list(distance = Inf, path = c())
   # loop trough all packages
   for(package in seq_len(nrow(packages))){
-    cat("Calculating path of next package\n\n")
+    #cat("Calculating path of next package\n\n")
     # if package is delivered, skip
     if(packages[package, 5] == 2){
-      cat("Package ", package, " already delivered\n")
+      #cat("Package ", package, " already delivered\n")
       next
     }
     # if the car is holding a package, throw error (but should not happen)
@@ -46,15 +46,15 @@ findPathToCheapestPackage=function(roads, car, packages){
     # compare this distance/path with the current shortest path
     if(newPath$distance < shortestPath$distance){
       # If shorter, update shortest path and package.
-      cat("New shortest path: ")
-      cat(newPath$path)
-      cat("\n\n")
+      #cat("New shortest path: ")
+      #cat(newPath$path)
+      #cat("\n\n")
       shortestPath = newPath
     }
   }
-  cat("shortest path: ")
-  print(shortestPath$path)
-  cat("\n")
+  #cat("shortest path: ")
+  #print(shortestPath$path)
+  #cat("\n")
   return(shortestPath)
 }
 
@@ -114,7 +114,7 @@ a_star = function(roads, start, goal) {
     
     if (inspected_node_index == goal_index) {
       # Goal node found, reconstruct the path
-      cat("Goal node found!\n")
+      #cat("Goal node found!\n")
       
       # Reconstruct the path by backtracking from the goal node to the start node
       path = c(goal)
