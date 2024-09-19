@@ -12,7 +12,7 @@ walterDM=function(roads, car, packages) {
     # gets the first transition of the cheapest rout
     packageDestination = c(car$load[3], car$load[4])
     print(packageDestination)
-    nextMove = pathToNextMove(a_star(roads, list(car$x, car$y), packageDestination)$path)
+    nextMove = pathToNextMove(a_star(roads, c(car$x, car$y), packageDestination)$path)
   }
   cat(nextMove, "\n")
   car$nextMove = nextMove
