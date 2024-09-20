@@ -135,57 +135,58 @@ a_star = function(roads, start, goal) {
     #  inspected_node_priority,
     #  "\n"
     #)
-    #(3,1)-h(1,3)-(3,2)-h(2,3)-(3,3)
+    #(1,3)-h(1,3)-(2,3)-h(2,3)-(3,3)
     #  |            |            |
     #v(1,2)        v(2,2)       v(3,2)
     #  |            |            |
-    #(2,1)-h(1,2)-(2,2)-h(2,2)-(2,3)
+    #(1,2)-h(1,2)-(2,2)-h(2,2)-(3,2)
     #  |            |            |
     #v(1,1)        v(2,1)       v(3,1)
     #  |            |            |
-    #(1,1)-h(1,1)-(1,2)-h(2,1)-(1,3)
+    #(1,1)-h(1,1)-(2,1)-h(2,1)-(3,1)
+    
     
     # Check all neighboring nodes
     # Right neighbor
-    if (current_col < ncol_grid) {
-      right_index = node_index(current_row, current_col + 1, ncol_grid)
-      new_dist = distances[inspected_node_index] + roads$hroads[current_col , current_row]
+    if (current_row < nrow_grid) {
+      right_index = node_index(current_row + 1, current_col, ncol_grid)
+      new_dist = distances[inspected_node_index] + roads$hroads[current_row , current_col]
       if (new_dist < distances[right_index]) {
         distances[right_index] = new_dist
-        node_priorities[right_index] = new_dist + manhattanDistance(c(current_row, current_col + 1),goal)
+        node_priorities[right_index] = new_dist + manhattanDistance(c(current_row + 1, current_col),goal)
         parent[right_index] = inspected_node_index
       }
     }
     
     # Down neighbor
-    if (current_row > 1) {
-      down_index = node_index(current_row - 1, current_col, ncol_grid)
-      new_dist = distances[inspected_node_index] + roads$vroads[current_col, current_row - 1]
+    if (current_col > 1) {
+      down_index = node_index(current_row , current_col - 1, ncol_grid)
+      new_dist = distances[inspected_node_index] + roads$vroads[current_row , current_col - 1]
       if (new_dist < distances[down_index]) {
         distances[down_index] = new_dist
-        node_priorities[down_index] = new_dist + manhattanDistance(c(current_row - 1, current_col),goal)
+        node_priorities[down_index] = new_dist + manhattanDistance(c(current_row , current_col - 1),goal)
         parent[down_index] = inspected_node_index
       }
     }
     
     # Left neighbor
-    if (current_col > 1) {
-      left_index = node_index(current_row, current_col - 1, ncol_grid)
-      new_dist = distances[inspected_node_index] + roads$hroads[current_col - 1, current_row]
+    if (current_row > 1) {
+      left_index = node_index(current_row - 1, current_col , ncol_grid)
+      new_dist = distances[inspected_node_index] + roads$hroads[current_row - 1, current_col ]
       if (new_dist < distances[left_index]) {
         distances[left_index] = new_dist
-        node_priorities[left_index] = new_dist + manhattanDistance(c(current_row, current_col - 1),goal)
+        node_priorities[left_index] = new_dist + manhattanDistance(c(current_row - 1, current_col),goal)
         parent[left_index] = inspected_node_index
       }
     }
     
     # Up neighbor
-    if (current_row < nrow_grid) {
-      up_index = node_index(current_row + 1, current_col, ncol_grid)
-      new_dist = distances[inspected_node_index] + roads$vroads[current_col, current_row]
+    if (current_col < ncol_grid) {
+      up_index = node_index(current_row , current_col + 1, ncol_grid)
+      new_dist = distances[inspected_node_index] + roads$vroads[current_row , current_col]
       if (new_dist < distances[up_index]) {
         distances[up_index] = new_dist
-        node_priorities[up_index] = new_dist + manhattanDistance(c(current_row + 1, current_col),goal)
+        node_priorities[up_index] = new_dist + manhattanDistance(c(current_row , current_col + 1),goal)
         parent[up_index] = inspected_node_index
       }
     }
@@ -247,4 +248,5 @@ pathToNextMove=function(path){
 
 #################################################################################################################
 # testing
-#testDM(myFunction = walterDM, verbose=2,returnVec=TRUE,n=1,seed=21,timeLimit=250)
+#runDeliveryMan(walterDM)
+testDM(myFunction = walterDM, verbose=2,returnVec=TRUE, n=10, seed=21, timeLimit=250)
