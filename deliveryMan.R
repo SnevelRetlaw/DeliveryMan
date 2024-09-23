@@ -1,50 +1,37 @@
-##############################################################################################################
-
-
-walterDM=function(roads, car, packages) {
+groupTwoDM=function(roads, car, packages) {
   nextMove=0
-  closest
   if (car$load==0) {
-    # gets the first transition of the route to the 'cheapest' package
-    nextMove = findCheapestPackage(roads, car, packages)[1]
+    cheapestPackage = findPathToCheapestPackage(roads, car, packages)
+    nextMove = pathToNextMove(cheapestPackage$path)
   }
   else {
-    # gets the first transition of the cheapest rout
-    nextMove = runAstar(roads, list(car$x, car$y), list(car$load[3], car$load[4]))[1]
+    packageDestination = c(packages[car$load, 3],packages[car$load, 4])
+    nextPath = a_star(roads, c(car$x, car$y), packageDestination)$path
+    nextMove = pathToNextMove(nextPath)
   }
   car$nextMove = nextMove
   return (car)
 }
+
 #' This function loops through all packages that have not been delivered and runs A* on them
 #' It returns the path to the cheapest package
 #' @param roads See help documentation for the runDeliveryMan function
 #' @param car See help documentation for the runDeliveryMan function
 #' @param packages See help documentation for the runDeliveryMan function
 #' @return A list of transitions that illustrates the route to the 'cheapest' package. A transition is described by 2,4,5,6,8 to indicate the direction
-findCheapestPackage=function(roads, car, packages){
-  # initialise
-    # cheapestPackage is the number of the package that is the shortest
-  cheapestPackage = -1
-    # shortestPath represents the path to the cheapestPackage
-  #' TODO: find a proper way to represent paths
-  shortestPath = Inf
-  # loop trough all packages
-  for(package in seq_along(packages)){
-    # if package is delivered, skip
-    if(package[[5]] == 2) next
-    # if the car is holding a package, throw error (but should not happen)
-    if(package[[5]] == 1){
+findPathToCheapestPackage=function(roads, car, packages){
+  shortestPath = list(distance = Inf, path = c())
+  for(package in seq_len(nrow(packages))){
+    if(packages[package, 5] == 2){
+      next
+    }
+    if(packages[package, 5] == 1){
       stop("Car is holding a package, but it is looking for the closest package. 'findCheapestPackage' is called while it should not have been called")
     }
     
-    # run A* with the current package as the goal and the current location of the car as the start
-    newPath = runAstar(roads, list(car$x, car$y), list(package[[1]], package[[2]]))
-    # compare this distance/path with the current shortest path
-    #' TODO: find way to represent and compare paths
-    if(newPath < shortestPath){
-      # If shorter, update shortest path and package.
+    newPath = a_star(roads, c(car$x, car$y), c(packages[package,1], packages[package,2]))
+    if(newPath$distance < shortestPath$distance){
       shortestPath = newPath
-      cheapestPackage = package
     }
   }
   return(shortestPath)
@@ -59,35 +46,26 @@ a_star = function(roads, start, goal) {
   nrow_grid= nrow(roads$hroads) + 1
   ncol_grid= ncol(roads$hroads) 
   
-  # Convert the start and goal coordinates to node indices
   start_index = node_index(start[1], start[2], ncol_grid)
   goal_index = node_index(goal[1], goal[2], ncol_grid)
   
-  # This contains the distances from the start node to all other nodes, initialized with a distance of "Infinity"
+  # Distances from the start node to all other nodes
   distances = rep(Inf, nrow_grid * ncol_grid)
-  
-  # The distance from the start node to itself is 0
   distances[start_index] = 0
   
-  # This contains the priorities with which to visit the nodes, calculated using the heuristic.
+  # Priorities with which to visit the nodes
   node_priorities = rep(Inf, nrow_grid * ncol_grid)
-  
-  # Start node has a priority equal to straight-line distance to the goal.
   node_priorities[start_index] = manhattanDistance(start, goal)
   
   # This keeps track of the parent of each node for path reconstruction
   parent = rep(NA, nrow_grid * ncol_grid)
   
-  # This contains whether a node was already visited
   visited_nodes = rep(FALSE, nrow_grid * ncol_grid)
   
-  # While there are nodes left to visit...
   repeat {
-    # Find the node with the currently lowest priority...
     inspected_node_priority = Inf
     inspected_node_index = -1
     for (i in seq_along(node_priorities)) {
-      # Going through all nodes that haven't been visited yet
       if (node_priorities[i] < inspected_node_priority && !visited_nodes[i]) {
         inspected_node_priority = node_priorities[i]
         inspected_node_index = i
@@ -95,100 +73,75 @@ a_star = function(roads, start, goal) {
     }
     
     if (inspected_node_index == -1) {
-      # There was no node not yet visited --> No path found
       return(list(distance = -1, path = NULL))
     } 
     
-    # Get the coordinates of the current node
     current_coords = index_to_coords(inspected_node_index, ncol_grid, nrow_grid)
     current_row = current_coords[1]
     current_col = current_coords[2]
     
     if (inspected_node_index == goal_index) {
-      # Goal node found, reconstruct the path
-      cat("Goal node found!\n")
-      
-      # Reconstruct the path by backtracking from the goal node to the start node
-      path = c(goal_index)
+      # reconstruct path
+      path = c(goal)
       while (!is.na(parent[inspected_node_index])) {
         inspected_node_index = parent[inspected_node_index]
-        path = append(inspected_node_index, path)
+        node_coords = index_to_coords(inspected_node_index, ncol_grid, nrow_grid)
+        path = append(node_coords, path)
       }
       
       return(list(distance = distances[goal_index], path = path))
     }
     
-    # Visit the node with the lowest priority
-    cat(
-      "Visiting node",
-      inspected_node_index,
-      "with currently lowest priority of",
-      inspected_node_priority,
-      "\n"
-    )
-    #(3,1)-h(1,3)-(3,2)-h(2,3)-(3,3)
-    #  |            |            |
-    #v(1,2)        v(2,2)       v(3,2)
-    #  |            |            |
-    #(2,1)-h(1,2)-(2,2)-h(2,2)-(2,3)
-    #  |            |            |
-    #v(1,1)        v(2,1)       v(3,1)
-    #  |            |            |
-    #(1,1)-h(1,1)-(1,2)-h(2,1)-(1,3)
-    
-    # Check all neighboring nodes
     # Right neighbor
-    if (current_col < ncol_grid) {
-      right_index = node_index(current_row, current_col + 1, ncol_grid)
-      new_dist = distances[inspected_node_index] + roads$hroads[current_col , current_row]
+    if (current_row < nrow_grid) {
+      right_index = node_index(current_row + 1, current_col, ncol_grid)
+      new_dist = distances[inspected_node_index] + roads$hroads[current_row , current_col]
       if (new_dist < distances[right_index]) {
         distances[right_index] = new_dist
-        node_priorities[right_index] = new_dist + manhattanDistance(c(current_row, current_col + 1),goal)
+        node_priorities[right_index] = new_dist + manhattanDistance(c(current_row + 1, current_col),goal)
         parent[right_index] = inspected_node_index
       }
     }
     
     # Down neighbor
-    if (current_row > 1) {
-      down_index = node_index(current_row - 1, current_col, ncol_grid)
-      new_dist = distances[inspected_node_index] + roads$vroads[current_col, current_row - 1]
+    if (current_col > 1) {
+      down_index = node_index(current_row , current_col - 1, ncol_grid)
+      new_dist = distances[inspected_node_index] + roads$vroads[current_row , current_col - 1]
       if (new_dist < distances[down_index]) {
         distances[down_index] = new_dist
-        node_priorities[down_index] = new_dist + manhattanDistance(c(current_row - 1, current_col),goal)
+        node_priorities[down_index] = new_dist + manhattanDistance(c(current_row , current_col - 1),goal)
         parent[down_index] = inspected_node_index
       }
     }
     
     # Left neighbor
-    if (current_col > 1) {
-      left_index = node_index(current_row, current_col - 1, ncol_grid)
-      new_dist = distances[inspected_node_index] + roads$hroads[current_col - 1, current_row]
+    if (current_row > 1) {
+      left_index = node_index(current_row - 1, current_col , ncol_grid)
+      new_dist = distances[inspected_node_index] + roads$hroads[current_row - 1, current_col ]
       if (new_dist < distances[left_index]) {
         distances[left_index] = new_dist
-        node_priorities[left_index] = new_dist + manhattanDistance(c(current_row, current_col - 1),goal)
+        node_priorities[left_index] = new_dist + manhattanDistance(c(current_row - 1, current_col),goal)
         parent[left_index] = inspected_node_index
       }
     }
     
     # Up neighbor
-    if (current_row < nrow_grid) {
-      up_index = node_index(current_row + 1, current_col, ncol_grid)
-      new_dist = distances[inspected_node_index] + roads$vroads[current_col, current_row]
+    if (current_col < ncol_grid) {
+      up_index = node_index(current_row , current_col + 1, ncol_grid)
+      new_dist = distances[inspected_node_index] + roads$vroads[current_row , current_col]
       if (new_dist < distances[up_index]) {
         distances[up_index] = new_dist
-        node_priorities[up_index] = new_dist + manhattanDistance(c(current_row + 1, current_col),goal)
+        node_priorities[up_index] = new_dist + manhattanDistance(c(current_row , current_col + 1),goal)
         parent[up_index] = inspected_node_index
       }
     }
     
-    # Mark the current node as visited after checking all its neighbors
     visited_nodes[inspected_node_index] = TRUE
-    cat("Visited nodes:", visited_nodes, "\n")
-    cat("Currently lowest distances:", distances, "\n")
   }
 }
 
 ####### Helper Astar functions #######
+
 # Convert coordinates to indices in a 1D representation of the grid
 node_index = function(row, col, ncol_grid) {
   return((row - 1) * ncol_grid + col)
@@ -207,9 +160,27 @@ index_to_coords = function(index, ncol_grid, nrow_grid) {
 manhattanDistance=function(start, goal){
   return(abs(start[[1]] - goal[[1]]) + abs(start[[2]] - goal[[2]]))
 }
-######################################
 
-
-#################################################################################################################
-# testing
-#testDM(myFunction = walterDM, verbose=2,returnVec=TRUE,n=1,seed=21,timeLimit=250)
+pathToNextMove=function(path){
+  # handle if on same node
+  if(length(path) <= 2){
+    return(5)
+  }
+  
+  changeX = path[1] - path[3]
+  changeY = path[2] - path[4]
+  
+  if (changeX == 0 && changeY == 0) {
+    return(5)
+  } else if (changeX == -1 && changeY == 0) {
+    return(6)
+  } else if (changeX == 1 && changeY == 0) {
+    return(4)
+  } else if (changeX == 0 && changeY == -1) {
+    return(8)
+  } else if (changeX == 0 && changeY == 1) {
+    return(2)
+  } else {
+    stop("invalid transition. changeX: " ++ changeX ++ ", ChangeY: " ++ changeY)
+  }
+}
