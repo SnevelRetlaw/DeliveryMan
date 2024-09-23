@@ -1,4 +1,4 @@
-groupTwoDM=function(roads, car, packages) {
+myFunction=function(roads, car, packages) {
   nextMove=0
   if (car$load==0) {
     cheapestPackage = findPathToCheapestPackage(roads, car, packages)
